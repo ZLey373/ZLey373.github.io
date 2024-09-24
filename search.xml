@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>红黑树</title>
+      <link href="/2024/09/24/%E7%BA%A2%E9%BB%91%E6%A0%91-/"/>
+      <url>/2024/09/24/%E7%BA%A2%E9%BB%91%E6%A0%91-/</url>
+      
+        <content type="html"><![CDATA[<p>1、是什么</p><p>红黑树是一种自平衡二叉搜索树，在插入和删除操作后可以通过旋转和重新着色来保持树的平衡</p><p>2、特点</p><ul><li>每个节点都有颜色，红或者黑</li><li>根节点是黑色</li><li>所有的叶子节点是黑色</li><li>每一个红色节点的两个字节点都是黑色</li><li>从根节点出发到叶子节点或空叶子节点的每条路径上，黑色节点的数量是相同的</li></ul><p>3、重点<br>通过以上的五个特性，确保了最长路径不超过最短路径的两倍</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> 数据结构 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 数据结构 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Hello World</title>
       <link href="/2024/09/23/hello-world/"/>
       <url>/2024/09/23/hello-world/</url>
