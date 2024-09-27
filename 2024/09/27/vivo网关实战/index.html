@@ -445,7 +445,7 @@
 <p>上面这段话映射到Netty Handler中，则意味着Zuul2并没有使用HttpObjectAggregator。</p>
 <p>我们先看一下常规的Netty Server处理HTTP协议的样例：</p>
 <p>NettyServer样例</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Slf4j</span>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Slf4j</span>
 <span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">ConfigServerBootstrap</span> <span class="token punctuation">&#123;</span>
  
     <span class="token keyword">public</span> <span class="token keyword">static</span> <span class="token keyword">final</span> <span class="token keyword">int</span> <span class="token constant">WORKER_THREAD_COUNT</span> <span class="token operator">=</span> <span class="token class-name">Runtime</span><span class="token punctuation">.</span><span class="token function">getRuntime</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">availableProcessors</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
@@ -480,7 +480,7 @@
             log<span class="token punctuation">.</span><span class="token function">error</span><span class="token punctuation">(</span><span class="token class-name">String</span><span class="token punctuation">.</span><span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"start netty server error, port:%s"</span><span class="token punctuation">,</span> port<span class="token punctuation">)</span><span class="token punctuation">,</span> e<span class="token punctuation">)</span><span class="token punctuation">;</span>
         <span class="token punctuation">&#125;</span>
     <span class="token punctuation">&#125;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span></code></pre>
 
 <p>这个例子中的两个关键类为：HttpServerCodec、HttpObjectAggregator。</p>
 <p>HttpServerCodec是HttpRequestDecoder、HttpResponseEncoder的组合器。</p>
@@ -493,7 +493,7 @@
 <p>HTTP协议通常使用Content-Length来标识body的长度，在服务器端，需要先申请对应长度的buffer，然后再赋值。如果需要一边生产数据一边发送数据，就需要使用”Transfer-Encoding: chunked” 来代替Content-Length，也就是对数据进行分块传输。</p>
 <p>接下来我们看一下Zuul2为了解析HTTP协议做了哪些处理。</p>
 <p>Zuul的源码：<a target="_blank" rel="noopener" href="https://github.com/Netflix/zuul%EF%BC%8C%E5%9F%BA%E4%BA%8Ev2.1.5%E3%80%82">https://github.com/Netflix/zuul，基于v2.1.5。</a></p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// com.netflix.zuul.netty.server.BaseZuulChannelInitializer#addHttp1Handlers</span>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token comment">// com.netflix.zuul.netty.server.BaseZuulChannelInitializer#addHttp1Handlers</span>
 <span class="token keyword">protected</span> <span class="token keyword">void</span> <span class="token function">addHttp1Handlers</span><span class="token punctuation">(</span><span class="token class-name">ChannelPipeline</span> pipeline<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
     pipeline<span class="token punctuation">.</span><span class="token function">addLast</span><span class="token punctuation">(</span><span class="token constant">HTTP_CODEC_HANDLER_NAME</span><span class="token punctuation">,</span> <span class="token function">createHttpServerCodec</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
  
@@ -509,7 +509,7 @@
             <span class="token constant">MAX_CHUNK_SIZE</span><span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
             <span class="token boolean">false</span>
     <span class="token punctuation">)</span><span class="token punctuation">;</span>
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span></code></pre>
 
 <p>通过对比上面的样例发现，Zuul2并没有添加HttpObjectAggregator，也就是需要自行去处理chunked分块传输问题、自行组装请求体数据。</p>
 <p>为了解决上面说的chunked分块传输问题，Zuul2通过判断是否LastHttpContent，来判断是否接收完成。</p>
@@ -627,7 +627,7 @@
 <p><a target="_blank" rel="noopener" href="https://github.com/Netflix/archaius">https://github.com/Netflix/archaius</a></p>
 <p>Zuul2依赖的动态配置为archaius，通过扩展ConcurrentMapConfiguration添加到ConcurrentCompositeConfiguration中。</p>
 <p>新增GatewayConfigConfiguration，用于存储全局配置、治理配置、节点信息、API数据等。</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Singleton</span>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token annotation punctuation">@Singleton</span>
 <span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">GatewayConfigConfiguration</span> <span class="token keyword">extends</span> <span class="token class-name">ConcurrentMapConfiguration</span> <span class="token punctuation">&#123;</span>
  
     <span class="token keyword">public</span> <span class="token class-name">GatewayConfigConfiguration</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
@@ -638,7 +638,7 @@
         <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">setDelimiterParsingDisabled</span><span class="token punctuation">(</span><span class="token class-name">Boolean</span><span class="token punctuation">.</span><span class="token constant">TRUE</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     <span class="token punctuation">&#125;</span>
  
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span></code></pre>
 
 <p>通过Google Guice控制Bean的加载顺序，在较早的时机，执行</p>
 <p>ConfigurationManager.getConfigInstance()，获取到ConcurrentCompositeConfiguration，完成GatewayConfigConfiguration的初始化，然后再插入到第一个位置。</p>
@@ -664,7 +664,7 @@
 <p>为了解决这个问题，创建了一个gateway_origin_mapping表，用于path前缀或者域名前缀 映射到 serviceName，通过在管理后台建立这个映射关系，然后推送到网关服务，即可解决显式传递serviceName的问题，会自动提取请求的path前缀、域名前缀，找到对应的serviceName。</p>
 <p>如果不希望是在一个后端服务中进行API匹配，则需阅读后面的第七章节。</p>
 <h3 id="6-4-负载均衡"><a href="#6-4-负载均衡" class="headerlink" title="6.4 负载均衡"></a>6.4 负载均衡</h3><p>替换 ribbon 组件，改为仿造 Dubbo 的负载均衡机制。</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">ILoadBalance</span> <span class="token punctuation">&#123;</span>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">ILoadBalance</span> <span class="token punctuation">&#123;</span>
  
     <span class="token comment">/**
      * 从服务列表中筛选一台机器进行调用
@@ -675,7 +675,7 @@
      */</span>
     <span class="token class-name">DynamicServer</span> <span class="token function">select</span><span class="token punctuation">(</span><span class="token class-name">List</span><span class="token generics"><span class="token punctuation">&lt;</span><span class="token class-name">DynamicServer</span><span class="token punctuation">></span></span> serverList<span class="token punctuation">,</span> <span class="token class-name">String</span> originName<span class="token punctuation">,</span> <span class="token class-name">HttpRequestMessage</span> requestMessage<span class="token punctuation">)</span><span class="token punctuation">;</span>
  
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span></code></pre>
 
 <p>替换的理由：ribbon的服务列表更新只是定期更新，如果不考虑复杂的筛选过滤，是满足要求的，但是如果想要灵活的根据请求头、请求参数进行筛选，ribbon则不太适合。</p>
 <h3 id="6-5-心跳检测"><a href="#6-5-心跳检测" class="headerlink" title="6.5 心跳检测"></a>6.5 心跳检测</h3><blockquote>
@@ -683,11 +683,11 @@
 </blockquote>
 <p><strong>第一期先实现简单版本</strong>：通过定时任务定期去异步调用心跳检测Url，如果超过失败阈值，则从从负载均衡列表中剔除。</p>
 <p>异步请求采用httpasyncclient组件处理。</p>
-<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">></span></span>
+<pre class="language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>dependency</span><span class="token punctuation">></span></span>
     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>groupId</span><span class="token punctuation">></span></span>org.apache.httpcomponents<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>groupId</span><span class="token punctuation">></span></span>
     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>artifactId</span><span class="token punctuation">></span></span>httpasyncclient<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>artifactId</span><span class="token punctuation">></span></span>
     <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>version</span><span class="token punctuation">></span></span>4.1.4<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>version</span><span class="token punctuation">></span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>dependency</span><span class="token punctuation">></span></span></code></pre>
 
 <p>方案为：HealthCheckScheduledExecutor + HealthCheckTask + HttpAsyncClient。</p>
 <h3 id="6-6-日志异步化改造"><a href="#6-6-日志异步化改造" class="headerlink" title="6.6 日志异步化改造"></a>6.6 日志异步化改造</h3><p>Zuul2默认采用的log4j进行日志打印，是同步阻塞操作，需要修改为异步化操作，改为使用logback的AsyncAppender。</p>
@@ -718,7 +718,7 @@
 <p><strong>设计方案</strong></p>
 <p>我们给后端机器节点dynamic_forward_server表新增了一个字段online，如果online&#x3D;1，则代表在线，接收流量，反之，则代表下线，不接收流量。</p>
 <p>网关服务gateway-server新增一个路由：OnlineRouter，从后端机器列表中筛选online&#x3D;1的机器，过滤掉不在线的机器，则完成了无损发布的功能。</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">IRouter</span> <span class="token punctuation">&#123;</span>
+<pre class="language-java" data-language="java"><code class="language-java"><span class="token keyword">public</span> <span class="token keyword">interface</span> <span class="token class-name">IRouter</span> <span class="token punctuation">&#123;</span>
  
     <span class="token comment">/**
      * 过滤
@@ -774,7 +774,7 @@
         <span class="token keyword">return</span> hasOfflineServer<span class="token punctuation">;</span>
     <span class="token punctuation">&#125;</span>
  
-<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<span class="token punctuation">&#125;</span></code></pre>
 
 <h3 id="6-9-网关集群分组隔离"><a href="#6-9-网关集群分组隔离" class="headerlink" title="6.9 网关集群分组隔离"></a>6.9 网关集群分组隔离</h3><blockquote>
 <p>网关集群的分组隔离指的是业务与业务之间的请求应该是隔离的，不应该被部分业务请求打垮了网关服务，从而导致了别的业务请求无法处理。</p>
