@@ -1146,7 +1146,7 @@ int sk_wait_data(struct sock *sk, long *timeo)
 <p>用户线程注册<code>write事件</code>的时机是只有当用户发送的数据<code>无法一次性</code>全部写入<code>buffer</code>时，才会去注册<code>write事件</code>，等待<code>buffer重新可写</code>时，继续写入剩下的发送数据、如果用户线程可以一股脑的将发送数据全部写入<code>buffer</code>，那么也就无需注册<code>write事件</code>到<code>从Reactor</code>中。</p>
 </blockquote>
 <p><code>主从Reactor多线程</code>模型是现在大部分主流网络框架中采用的一种<code>IO线程模型</code>。我们本系列的主题<code>Netty</code>就是用的这种模型。</p>
-<h2 id="Proactor"><a href="#Proactor" class="headerlink" title="Proactor"></a>Proactor</h2><p><code>Proactor</code>是基于<code>AIO</code>对<code>IO线程</code>进行分工的一种模型。前边我们介绍了<code>异步IO模型</code>，它是操作系统内核支持的一种全异步编程模型，在<code>数据准备阶段</code>和<code>数据拷贝阶段</code>全程无阻塞。</p>
+<h3 id="Proactor"><a href="#Proactor" class="headerlink" title="Proactor"></a>Proactor</h3><p><code>Proactor</code>是基于<code>AIO</code>对<code>IO线程</code>进行分工的一种模型。前边我们介绍了<code>异步IO模型</code>，它是操作系统内核支持的一种全异步编程模型，在<code>数据准备阶段</code>和<code>数据拷贝阶段</code>全程无阻塞。</p>
 <p><code>ProactorIO线程模型</code>将<code>IO事件的监听</code>，<code>IO操作的执行</code>，<code>IO结果的dispatch</code>统统交给<code>内核</code>来做。</p>
 <p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/640-1727504704761-100.png" alt="图片">proactor.png</p>
 <p><strong><code>Proactor模型</code>组件介绍：</strong></p>
@@ -1170,7 +1170,7 @@ int sk_wait_data(struct sock *sk, long *timeo)
 <li><code>Proactor</code>从<code>completion event queue</code>中取出<code>completion event</code>，并回调与<code>IO完成事件</code>关联的<code>completion handler</code>。</li>
 <li>在<code>completion handler</code>中完成业务逻辑处理。</li>
 </ul>
-<h2 id="Reactor与Proactor对比"><a href="#Reactor与Proactor对比" class="headerlink" title="Reactor与Proactor对比"></a>Reactor与Proactor对比</h2><ul>
+<h3 id="Reactor与Proactor对比"><a href="#Reactor与Proactor对比" class="headerlink" title="Reactor与Proactor对比"></a>Reactor与Proactor对比</h3><ul>
 <li><code>Reactor</code>是基于<code>NIO</code>实现的一种<code>IO线程模型</code>，<code>Proactor</code>是基于<code>AIO</code>实现的<code>IO线程模型</code>。</li>
 <li><code>Reactor</code>关心的是<code>IO就绪事件</code>，<code>Proactor</code>关心的是<code>IO完成事件</code>。</li>
 <li>在<code>Proactor</code>中，用户程序需要向内核传递<code>用户空间的读缓冲区地址</code>。<code>Reactor</code>则不需要。这也就导致了在<code>Proactor</code>中每个并发操作都要求有独立的缓存区，在内存上有一定的开销。</li>
