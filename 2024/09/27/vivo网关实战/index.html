@@ -429,7 +429,7 @@
 <p>在进行技术选型的时候，主要考虑功能丰富度、性能、稳定性。在反复对比之后，决定选择基于Netty框架进行网关开发；但是考虑到时间的紧迫性，最终选择为针对 Zuul2 进行定制化开发，在 Zuul2 的代码骨架之上去完善网关的整个体系。</p>
 <h2 id="三、Zuul2-介绍"><a href="#三、Zuul2-介绍" class="headerlink" title="三、Zuul2 介绍"></a>三、Zuul2 介绍</h2><p>接下来我们简要介绍一下 Zuul2 关键知识点。</p>
 <p>Zuul2 的架构图：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-1-1727423213101-1.jpeg" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-1.jpeg" alt="img"></p>
 <p>为了解释上面这张图，接下来会分别介绍几个点</p>
 <ul>
 <li>如何解析 HTTP 协议</li>
@@ -518,7 +518,7 @@
 
 <p>通过对比上面的样例发现，Zuul2并没有添加HttpObjectAggregator，也就是需要自行去处理chunked分块传输问题、自行组装请求体数据。</p>
 <p>为了解决上面说的chunked分块传输问题，Zuul2通过判断是否LastHttpContent，来判断是否接收完成。</p>
-<h3 id="3-2-Zuul2-数据流转"><a href="#3-2-Zuul2-数据流转" class="headerlink" title="3.2 Zuul2 数据流转"></a>3.2 Zuul2 数据流转</h3><p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-2-1727423266234-4.png" alt="img"></p>
+<h3 id="3-2-Zuul2-数据流转"><a href="#3-2-Zuul2-数据流转" class="headerlink" title="3.2 Zuul2 数据流转"></a>3.2 Zuul2 数据流转</h3><p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-2.png" alt="img"></p>
 <p>如上图所示，Netty自带的HttpServerCodec会将网络二进制流转换为Netty的HttpRequest对象，再通过ClientRequestReceiver编解码器将HttpRequest转换为Zuul的请求对象HttpRequestMessageImpl；</p>
 <p>请求体RequestBody在Netty自带的HttpServerCodec中被映射为HttpContent对象，ClientRequestReceiver编解码器依次接收HttpContent对象。</p>
 <p>完成了上述数据的转换之后，就流转到了最重要的编解码ZuulFilterChainHandler，里面会执行Filter链，也会发起网络请求到真正的后端服务，这一切都是在ZuulFilterChainHandler中完成的。</p>
@@ -526,17 +526,17 @@
 <p>这里需要特别说明的是：由于Zuul2默认不组装一个完整的请求对象&#x2F;响应对象，所以Zuul2是分别针对请求头+请求Headers、请求体进行Filter过滤拦截的，也就是说对于请求，会走两遍前置Filter链，对于响应结果，也是会走两遍后置Filter链拦截。</p>
 <h3 id="3-3-两个责任链"><a href="#3-3-两个责任链" class="headerlink" title="3.3 两个责任链"></a>3.3 两个责任链</h3><h4 id="3-3-1-Netty-ChannelPipeline责任链"><a href="#3-3-1-Netty-ChannelPipeline责任链" class="headerlink" title="3.3.1 Netty ChannelPipeline责任链"></a>3.3.1 Netty ChannelPipeline责任链</h4><p>Netty的ChannelPipeline设计，通过往ChannelPipeline中动态增减Handler进行定制扩展。</p>
 <p>接下来看一下Zuul2 Netty Server中的pipeline有哪些Handler？</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-3-1727423291706-7.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-3.png" alt="img"></p>
 <p>接着继续看一下Zuul2 Netty Client的Handler有哪些？</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-4-1727423312523-10.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-4.png" alt="img"></p>
 <p>本文不针对具体的Handler进行详细解释，主要是给大家一个整体的视图。</p>
-<h4 id="3-3-2-Filter责任链"><a href="#3-3-2-Filter责任链" class="headerlink" title="3.3.2 Filter责任链"></a>3.3.2 Filter责任链</h4><p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-5-1727423333053-13.png" alt="img"></p>
+<h4 id="3-3-2-Filter责任链"><a href="#3-3-2-Filter责任链" class="headerlink" title="3.3.2 Filter责任链"></a>3.3.2 Filter责任链</h4><p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-5.png" alt="img"></p>
 <p>请求发送到Netty Server中，先进行Inbound Filters的拦截处理，接着会调用Endpoint Filter，这里默认为ProxyEndPoint（里面封装了Netty Client），发送请求到真实后端服务，获取到响应结果之后，再执行Outbound Filters，最终返回响应结果。</p>
 <p>三种类型的Filter之间是通过nextStage属性来衔接的。</p>
 <p>Zuul2存在一个定时任务线程GroovyFilterFileManagerPoller，定期扫描特定的目录，通过比对文件的更新时间戳，来判断是否发生变化，如果有变化，则重新编译并放入到内存中。</p>
 <p>通过定位任务实现了Filter的动态加载。</p>
 <h2 id="四、功能介绍"><a href="#四、功能介绍" class="headerlink" title="四、功能介绍"></a>四、功能介绍</h2><p>上面介绍了Zuul2的部分知识点，接下来介绍网关的整体功能。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-6-1727423353405-16.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-6.png" alt="img"></p>
 <h3 id="4-1-服务注册发现"><a href="#4-1-服务注册发现" class="headerlink" title="4.1 服务注册发现"></a>4.1 服务注册发现</h3><blockquote>
 <p>网关承担了请求转发的功能，需要一定的方法用于动态发现后端服务的机器列表。</p>
 </blockquote>
@@ -579,9 +579,9 @@
 <p>网关集群的无损发布：我们考虑了后端服务的无损发布，但是也需要考虑网关节点自身的无损发布，这里我们不再重复造轮子，直接使用的是CICD系统的HTTP无损发布功能（Nginx动态摘除&#x2F;上线节点）。</p>
 <h3 id="4-11-网关集群分组隔离"><a href="#4-11-网关集群分组隔离" class="headerlink" title="4.11 网关集群分组隔离"></a>4.11 网关集群分组隔离</h3><p>网关集群的分组隔离指的是业务与业务之间的请求应该是隔离的，不应该被部分业务请求打垮了网关服务，从而导致了别的业务请求无法处理。</p>
 <p>这里我们会对接入网关的业务进行分组归类，不同的业务使用不同的分组，不同的网关分组，会部署独立的网关集群，从而隔离了风险，不用再担心业务之间的互相影响。</p>
-<h2 id="五、系统架构"><a href="#五、系统架构" class="headerlink" title="五、系统架构"></a>五、系统架构</h2><h3 id="5-1-模块交互图"><a href="#5-1-模块交互图" class="headerlink" title="5.1 模块交互图"></a>5.1 模块交互图</h3><p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-7-1727423377550-19.png" alt="img"></p>
+<h2 id="五、系统架构"><a href="#五、系统架构" class="headerlink" title="五、系统架构"></a>五、系统架构</h2><h3 id="5-1-模块交互图"><a href="#5-1-模块交互图" class="headerlink" title="5.1 模块交互图"></a>5.1 模块交互图</h3><p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-7.png" alt="img"></p>
 <h3 id="5-2-网关管理后台"><a href="#5-2-网关管理后台" class="headerlink" title="5.2 网关管理后台"></a>5.2 网关管理后台</h3><p>模块划分</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-8-1727423391951-22.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-8.png" alt="img"></p>
 <h3 id="5-3-通信机制"><a href="#5-3-通信机制" class="headerlink" title="5.3 通信机制"></a>5.3 通信机制</h3><blockquote>
 <p>由于需要动态的下发配置，比如全局开关、应用级别的治理配置、接口级别的治理配置，就需要网关管理后台可以与网关服务进行通信，比如推拉模式。</p>
 </blockquote>
@@ -596,7 +596,7 @@
 <li>信息不私密(zk集群权限管控能力较弱、担心被误删)</li>
 <li>无法灰度下发配置，比如只对其中的一台网关服务节点配置生效</li>
 </ul>
-<h4 id="5-3-1-基于HTTP的推模式"><a href="#5-3-1-基于HTTP的推模式" class="headerlink" title="5.3.1 基于HTTP的推模式"></a>5.3.1 基于HTTP的推模式</h4><p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-9-1727423410804-25.png" alt="img"></p>
+<h4 id="5-3-1-基于HTTP的推模式"><a href="#5-3-1-基于HTTP的推模式" class="headerlink" title="5.3.1 基于HTTP的推模式"></a>5.3.1 基于HTTP的推模式</h4><p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-9.png" alt="img"></p>
 <p>因为Zuul2本身就自带了Netty Server，同理也可以再多启动一个Netty Server提供HTTP服务，让管理后台发送HTTP请求到网关服务，进而发送配置数据到网关服务了。</p>
 <p>所以图上的蓝色标记Netty Server用于接收客户端请求转发到后端节点，紫色标记Netty Server用于提供HTTP服务，接收配置数据。</p>
 <h4 id="5-3-2-全量配置拉取"><a href="#5-3-2-全量配置拉取" class="headerlink" title="5.3.2 全量配置拉取"></a>5.3.2 全量配置拉取</h4><p>网关服务在启动之初，需要发送HTTP请求到管理后台拉取全部的配置数据，并且也需要拉取归属当前节点的灰度配置(只对这个节点生效的试验性配置)。</p>
@@ -648,7 +648,7 @@
 <p>通过Google Guice控制Bean的加载顺序，在较早的时机，执行</p>
 <p>ConfigurationManager.getConfigInstance()，获取到ConcurrentCompositeConfiguration，完成GatewayConfigConfiguration的初始化，然后再插入到第一个位置。</p>
 <p>后续只需要对GatewayConfigConfiguration进行配置的增删查改操作即可。</p>
-<h3 id="6-2-路由机制"><a href="#6-2-路由机制" class="headerlink" title="6.2 路由机制"></a>6.2 路由机制</h3><p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-10-1727423428502-28.png" alt="img"></p>
+<h3 id="6-2-路由机制"><a href="#6-2-路由机制" class="headerlink" title="6.2 路由机制"></a>6.2 路由机制</h3><p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-10.png" alt="img"></p>
 <p>路由机制也是仿造的Dubbo路由机制，灰度路由是仿造的Dubbo的标签路由，就近路由可以理解为同机房路由。</p>
 <p><strong>请求处理过程</strong>：</p>
 <p>客户端请求过来的时候，网关服务会通过path前缀提取到对应的后端服务名或者在请求Header中指定传递对应的serviceName，然后只在匹配到的后端服务中，继续API匹配操作，如果匹配到API，则筛选出对应的后端机器列表，然后进行路由、负载均衡，最终选中一台机器，将请求转发过去。</p>
@@ -656,12 +656,12 @@
 <p>在后面的第七章节会解答这个疑问，请耐心阅读。</p>
 <h4 id="6-2-1-就近路由"><a href="#6-2-1-就近路由" class="headerlink" title="6.2.1 就近路由"></a>6.2.1 就近路由</h4><p>当请求到网关服务，会提取网关服务自身的机房loc属性值，读取全局、应用级别的开关，如果就近路由开关打开，则筛选服务列表的时候，会过滤相同loc的后端机器，负载均衡的时候，在相同loc的机器列表中挑选一台进行请求。</p>
 <p>如果没有相同loc的后端机器，则降级从其他loc的后端机器中进行挑选。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-11-1727423440804-31.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-11.png" alt="img"></p>
 <p>其中 loc信息就是机房信息，每个后端服务节点在SDK上报或者手工录入的时候，都会携带这个值。</p>
 <h4 id="6-2-2-灰度路由"><a href="#6-2-2-灰度路由" class="headerlink" title="6.2.2 灰度路由"></a>6.2.2 灰度路由</h4><p>灰度路由需要用户传递Header属性值，比如<code>gray=canary_gray</code>。</p>
 <p>网关管理后台配置灰度路由的时候，会建立<code>grayName -&gt; List&lt;Server&gt;</code>映射关系，当网关管理后台增量推送到网关服务之后，网关服务就可以通过grayName来提取配置下的后端机器列表，然后再进行负载均衡挑选机器。</p>
 <p>如下图所示：</p>
-<p><img src="https://cdn.jsdelivr.net/gh/ZLey373/Pictures@master/gateway-vivo-12-1727423454564-34.png" alt="img"></p>
+<p><img src="https://hexoicture.oss-cn-beijing.aliyuncs.com/image/gateway-vivo-12.png" alt="img"></p>
 <h4 id="6-3-API映射匹配"><a href="#6-3-API映射匹配" class="headerlink" title="6.3 API映射匹配"></a>6.3 API映射匹配</h4><p>网关在进行请求转发的时候，需要明确知道请求哪一个服务的哪一个API，这个过程就是API匹配。</p>
 <p>因为不同的后端服务可能会拥有相同路径的API，所以网关要求请求传递serviceName，serviceName可以放置于请求Header或者请求参数中。</p>
 <p>携带了serviceName之后，就可以在后端服务的API中去匹配了，有一些是相等匹配，有些是正则匹配，因为RESTFul协议，需要支持 <code>/*</code> 通配符匹配。</p>
